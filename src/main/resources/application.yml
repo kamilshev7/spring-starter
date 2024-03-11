@@ -1,0 +1,51 @@
+db:
+  username: postgres
+  password: postgres
+  driver: PostgresDriver
+  url: postgres:5432
+  hosts:
+    - localhost
+    - 127.0.0.1
+  pool:
+    size: 12
+    timeout: 10
+
+spring.profiles.active: prod
+
+logging:
+  level:
+    root: info
+    guard.passer.core.database.pool.ConnectionPool: debug
+  file:
+    name: guard-passer.log
+    path: /
+
+spring:
+  mvc:
+    view:
+      prefix: /WEB-INF/jsp/
+      suffix: .jsp
+    format:
+      date: iso
+  datasource:
+    url: jdbc:postgresql://localhost:5433/postgres
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    properties.hibernate:
+      show_sql: true
+      format_sql: true
+      hbm2ddl.auto: validate
+    open-in-view: false
+  messages:
+    basename: messages
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            clientId: 757664404957-m9gbo4pd8okosusmpudmb2m3qfr5kr2l.apps.googleusercontent.com
+            clientSecret: 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
+            redirectUri: http://localhost:8080/login/oauth2/code/google
+            scope: openid,email,profile
