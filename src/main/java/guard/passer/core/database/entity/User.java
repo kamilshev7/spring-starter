@@ -50,4 +50,9 @@ public class User extends AuditingEntity<Long>{
     @Builder.Default
     @OneToMany(mappedBy = "user")
     private List<UserChat> userChats = new ArrayList<>();
+
+    @NotAudited
+    @Builder.Default
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.REMOVE)
+    private List<Phone> phones = new ArrayList<>();
 }

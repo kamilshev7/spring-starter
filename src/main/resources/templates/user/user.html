@@ -41,6 +41,10 @@
             </select>
         </label>
     </div>
+    <label th:if="${!user.phones.isEmpty()}">Phones:</label>
+    <div th:each="phone : ${user.phones}">
+        <label th:for="${phone}" th:text="${phone.phoneNumber}">Phone</label>
+    </div>
     <button type="submit">Update</button>
 </form>
 <form th:action="@{|/users/${user.id}/delete|}" th:if="${user.role.name() == 'ADMIN'}" method="post">

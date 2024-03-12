@@ -52,6 +52,7 @@ class UserControllerTest extends IntegrationTestBase {
                 .andExpect(status().is2xxSuccessful())
                 .andExpect(view().name("user/users"))
                 .andExpect(model().attributeExists("users"));
+        System.out.println();
     }
 
     @Test

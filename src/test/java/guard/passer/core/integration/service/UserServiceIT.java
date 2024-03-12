@@ -1,6 +1,8 @@
 package guard.passer.core.integration.service;
 
 import guard.passer.core.database.entity.UserRole;
+import guard.passer.core.database.reporitory.PhoneRepository;
+import guard.passer.core.dto.PhoneReadDto;
 import guard.passer.core.dto.UserCreateEditDto;
 import guard.passer.core.dto.UserReadDto;
 import guard.passer.core.integration.IntegrationTestBase;
@@ -9,8 +11,11 @@ import liquibase.pro.packaged.I;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,14 +38,56 @@ public class UserServiceIT extends IntegrationTestBase {
     }
 
     @Test
-    void findById(){
+    void deleteById() {
+        UserCreateEditDto userCreateEditDto = new UserCreateEditDto(
+                "test1@",
+                null,
+                LocalDate.now(),
+                "test1",
+                "testov1",
+                UserRole.USER,
+                COMPANY_1,
+                List.of("+7 777 777 77 71", "+7 777 777 77 72", "+7 777 777 77 73"),
+                new MockMultipartFile("test", new byte[0])
+        );
+        UserReadDto actualResult = userService.create(userCreateEditDto);
+        Optional<PhoneReadDto> phoneById1 = userService.findPhoneById(7L);
+        boolean b = userService.delete(actualResult.getId());
+        Optional<PhoneReadDto> phoneById2 = userService.findPhoneById(7L);
+        Optional<UserReadDto> user = userService.findById(actualResult.getId());
+        System.out.println();
+    }
+
+    @Test
+    void createAndFindById() {
+        UserCreateEditDto userCreateEditDto = new UserCreateEditDto(
+                "test1@",
+                null,
+                LocalDate.now(),
+                "test1",
+                "testov1",
+                UserRole.USER,
+                COMPANY_1,
+                List.of("+7 777 777 77 71", "+7 777 777 77 72", "+7 777 777 77 73"),
+                new MockMultipartFile("test", new byte[0])
+        );
+        UserReadDto actualResult = userService.create(userCreateEditDto);
+        Optional<PhoneReadDto> phoneById1 = userService.findPhoneById(7L);
+        boolean b = userService.deletePhoneById(7L);
+        Optional<PhoneReadDto> phoneById2 = userService.findPhoneById(7L);
+        Optional<UserReadDto> user = userService.findById(actualResult.getId());
+        System.out.println();
+    }
+
+    @Test
+    void findById() {
         Optional<UserReadDto> user = userService.findById(USER_1);
         assertTrue(user.isPresent());
         user.ifPresent(userReadDto -> assertEquals(USERNAME_1, userReadDto.getUsername()));
     }
 
     @Test
-    void create(){
+    void create() {
         UserCreateEditDto userCreateEditDto = new UserCreateEditDto(
                 "test@",
                 null,
@@ -49,7 +96,8 @@ public class UserServiceIT extends IntegrationTestBase {
                 "testov",
                 UserRole.USER,
                 COMPANY_1,
-                null
+                List.of("+7 777 777 77 71", "+7 777 777 77 72", "+7 777 777 77 73"),
+                new MockMultipartFile("test", new byte[0])
         );
         UserReadDto actualResult = userService.create(userCreateEditDto);
         assertEquals(userCreateEditDto.getUsername(), actualResult.getUsername());
@@ -58,21 +106,23 @@ public class UserServiceIT extends IntegrationTestBase {
         assertEquals(userCreateEditDto.getBirthDate(), actualResult.getBirthDate());
         assertSame(userCreateEditDto.getRole(), actualResult.getRole());
         assertEquals(userCreateEditDto.getCompanyId(), actualResult.getCompany().id());
+        assertEquals(userCreateEditDto.getPhones().size(), actualResult.getPhones().size());
     }
 
     @Test
-    void update(){
+    void update() {
         UserCreateEditDto userCreateEditDto =
                 new UserCreateEditDto(
-                "test@",
-                null,
-                LocalDate.now(),
-                "test",
-                "testov",
-                UserRole.USER,
-                COMPANY_1,
-                null
-        );
+                        "test@",
+                        null,
+                        LocalDate.now(),
+                        "test",
+                        "testov",
+                        UserRole.USER,
+                        COMPANY_1,
+                        null,
+                        null
+                );
         Optional<UserReadDto> actualResult = userService.update(USER_1, userCreateEditDto);
         actualResult.ifPresent(
                 result -> {
@@ -87,8 +137,9 @@ public class UserServiceIT extends IntegrationTestBase {
     }
 
     @Test
-    void delete(){
-       assertFalse(userService.delete(-1L));
+    void delete() {
+        assertFalse(userService.delete(-1L));
         assertTrue(userService.delete(USER_1));
+        System.out.println();
     }
 }

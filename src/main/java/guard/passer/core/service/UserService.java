@@ -1,16 +1,21 @@
 package guard.passer.core.service;
 
 import com.querydsl.core.types.Predicate;
+import guard.passer.core.database.entity.Phone;
 import guard.passer.core.database.entity.User;
 import guard.passer.core.database.querydsl.QPredicates;
+import guard.passer.core.database.reporitory.PhoneRepository;
 import guard.passer.core.database.reporitory.UserRepository;
+import guard.passer.core.dto.PhoneReadDto;
 import guard.passer.core.dto.UserCreateEditDto;
 import guard.passer.core.dto.UserFilter;
 import guard.passer.core.dto.UserReadDto;
+import guard.passer.core.mapper.PhoneReadMapper;
 import guard.passer.core.mapper.UserCreateEditMapper;
 import guard.passer.core.mapper.UserReadMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -34,7 +40,9 @@ import static guard.passer.core.database.entity.QUser.user;
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
+    private final PhoneRepository phoneRepository;
     private final UserReadMapper userReadMapper;
+    private final PhoneReadMapper phoneReadMapper;
     private final UserCreateEditMapper userCreateEditMapper;
     private final ImageService imageService;
 
@@ -73,7 +81,19 @@ public class UserService implements UserDetailsService {
                     uploadImage(userDto.getImage());
                     return userCreateEditMapper.map(userDto);
                 })
-                .map(user -> userRepository.save(user))
+                .map(user -> {
+                    User savedUser = userRepository.saveAndFlush(user);
+//                    List<Phone> phones = Optional.ofNullable(savedUser.getPhones()).orElse(new ArrayList<>());
+//                    phones.stream().forEach(phone -> {
+//                        phone.setOwner(savedUser);
+//                        phoneRepository.saveAndFlush(phone);
+//                    });
+                    savedUser.getPhones().stream().forEach(phone -> {
+                        phone.setOwner(savedUser);
+                        phoneRepository.saveAndFlush(phone);
+                    });
+                    return savedUser;
+                })
                 .map(user -> userReadMapper.map(user))
                 .orElseThrow();
     }
@@ -94,6 +114,23 @@ public class UserService implements UserDetailsService {
         if(!image.isEmpty()){
             imageService.upload(image.getOriginalFilename(), image.getInputStream());
         }
+    }
+
+    @CacheEvict(allEntries = true)
+    @Transactional
+    public boolean deletePhoneById(Long id) {
+        return phoneRepository.findById(id)
+                .map(phone -> {
+                    phoneRepository.deleteById(phone.getId());
+                    phoneRepository.flush();
+                    return true;
+                }).orElse(false);
+
+    }
+
+    public Optional<PhoneReadDto> findPhoneById(Long id){
+        return phoneRepository.findById(id)
+                .map(phone -> phoneReadMapper.map(phone));
     }
 
     @Transactional

@@ -50,6 +50,8 @@ public class QUser extends EntityPathBase<User> {
 
     public final StringPath password = createString("password");
 
+    public final ListPath<Phone, QPhone> phones = this.<Phone, QPhone>createList("phones", Phone.class, QPhone.class, PathInits.DIRECT2);
+
     public final EnumPath<UserRole> role = createEnum("role", UserRole.class);
 
     public final ListPath<UserChat, QUserChat> userChats = this.<UserChat, QUserChat>createList("userChats", UserChat.class, QUserChat.class, PathInits.DIRECT2);

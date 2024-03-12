@@ -1,10 +1,7 @@
 package guard.passer.core.http.rest;
 
 import guard.passer.core.database.entity.UserRole;
-import guard.passer.core.dto.PageResponse;
-import guard.passer.core.dto.UserCreateEditDto;
-import guard.passer.core.dto.UserFilter;
-import guard.passer.core.dto.UserReadDto;
+import guard.passer.core.dto.*;
 import guard.passer.core.service.CompanyService;
 import guard.passer.core.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -63,5 +60,11 @@ public class UserRestController {
         if (!userService.delete(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
+    }
+
+    @GetMapping("/phone/{id}")
+    public PhoneReadDto findPhoneById(@PathVariable Long id) {
+        return userService.findPhoneById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 }

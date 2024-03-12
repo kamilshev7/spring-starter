@@ -35,6 +35,7 @@ dependencies {
     implementation 'org.liquibase:liquibase-core'
 
     implementation 'com.querydsl:querydsl-jpa'
+    implementation 'org.projectlombok:lombok:1.18.20'
     annotationProcessor "com.querydsl:querydsl-apt:${versions.querydsl}"
 
 

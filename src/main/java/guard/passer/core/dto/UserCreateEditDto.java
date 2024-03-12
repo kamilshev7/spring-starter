@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
+import java.util.List;
 
 @Value
 @FieldNameConstants
@@ -29,6 +30,8 @@ public class UserCreateEditDto {
     String lastname;
     UserRole role;
     Integer companyId;
+
+    List<String> phones;
 
     MultipartFile image;
 }

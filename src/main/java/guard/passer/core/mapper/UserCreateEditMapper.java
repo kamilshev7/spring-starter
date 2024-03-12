@@ -1,18 +1,20 @@
 package guard.passer.core.mapper;
 
 import guard.passer.core.database.entity.Company;
+import guard.passer.core.database.entity.Phone;
 import guard.passer.core.database.entity.User;
 import guard.passer.core.database.reporitory.CompanyRepository;
 import guard.passer.core.dto.UserCreateEditDto;
-import guard.passer.core.dto.UserReadDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -41,6 +43,21 @@ public class UserCreateEditMapper implements Mapper<UserCreateEditDto, User> {
         user.setBirthDate(userDto.getBirthDate());
         user.setRole(userDto.getRole());
         user.setCompany(getCompany(userDto.getCompanyId()));
+
+        List<String> phones = Optional.ofNullable(userDto.getPhones()).orElse(new ArrayList<>());
+        List<Phone> phoneList = phones.stream().map(phoneStr -> {
+            Phone phone = new Phone();
+            phone.setPhoneNumber(phoneStr);
+            return phone;
+        }).collect(Collectors.toList());
+
+//        List<Phone> phoneList = userDto.getPhones().stream()
+//                .map(phoneStr -> {
+//                    Phone phone = new Phone();
+//                    phone.setPhoneNumber(phoneStr);
+//                    return phone;
+//                }).collect(Collectors.toList());
+        user.setPhones(phoneList);
 
         Optional.ofNullable(userDto.getRawPassword())
                 .filter(rawPassword -> StringUtils.hasText(rawPassword))

@@ -1,6 +1,7 @@
 package guard.passer.core.integration.database.reporitory;
 
 import guard.passer.core.database.entity.Company;
+import guard.passer.core.database.entity.Phone;
 import guard.passer.core.database.entity.User;
 import guard.passer.core.database.entity.UserRole;
 import guard.passer.core.database.reporitory.CompanyRepository;
@@ -27,6 +28,13 @@ import static org.junit.jupiter.api.Assertions.*;
 class UserRepositoryIT extends IntegrationTestBase {
 
     private final UserRepository userRepository;
+
+    @Test
+    void checkPhone(){
+        User user = userRepository.findById(2L).get();
+        List<Phone> phones = user.getPhones();
+        assertThat(phones).hasSize(3);
+    }
 
     @Test
     void checkAudit(){

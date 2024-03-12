@@ -4,6 +4,7 @@ import guard.passer.core.database.entity.UserRole;
 import lombok.Value;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Value
 public class UserReadDto {
@@ -15,5 +16,6 @@ public class UserReadDto {
     String image;
     UserRole role;
     CompanyReadDto company;
+    List<PhoneReadDto> phones;
 }
 

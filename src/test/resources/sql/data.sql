@@ -36,6 +36,14 @@ VALUES (100, (SELECT id FROM users WHERE username = 'ivan@gmail.com')),
        (510, (SELECT id FROM users WHERE username = 'kate@gmail.com')),
        (630, (SELECT id FROM users WHERE username = 'kate@gmail.com'));
 
+INSERT INTO phone (phone_number, owner_id)
+VALUES ('+7 777 777 77 71', (SELECT id FROM users WHERE username = 'vlad@gmail.com')),
+       ('+7 777 777 77 72', (SELECT id FROM users WHERE username = 'vlad@gmail.com')),
+       ('+8 888 888 88 81', (SELECT id FROM users WHERE username = 'petr@gmail.com')),
+       ('+8 888 888 88 82', (SELECT id FROM users WHERE username = 'petr@gmail.com')),
+       ('+8 888 888 88 83', (SELECT id FROM users WHERE username = 'petr@gmail.com')),
+       ('+1 111 111 11 11', (SELECT id FROM users WHERE username = 'sveta@gmail.com'));
+
 INSERT INTO chat (name)
 VALUES ('dmdev'),
        ('java'),

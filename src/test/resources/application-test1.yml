@@ -4,7 +4,7 @@ db:
 
 logging:
   level:
-    root: info
+    root: debug
 
 spring:
   datasource:
