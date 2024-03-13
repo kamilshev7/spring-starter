@@ -32,12 +32,11 @@ public interface UserRepository extends
             """)
     List<User> findAllBy(String firstname, String lastname);
 
-
-    @Query("""
-            select u from User u
-            left join fetch u.phones p
-            where u.id = :id
-            """)
+//    @Query("""
+//            select u from User u
+//            left join fetch u.phones p
+//            where u.id = :id
+//            """)
     Optional<User> findById(Long id);
 
     @Modifying(clearAutomatically = true)

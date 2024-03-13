@@ -15,9 +15,14 @@ import guard.passer.core.mapper.UserCreateEditMapper;
 import guard.passer.core.mapper.UserReadMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -26,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.EntityManager;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,6 +43,7 @@ import static guard.passer.core.database.entity.QUser.user;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@EnableCaching
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
@@ -45,6 +52,7 @@ public class UserService implements UserDetailsService {
     private final PhoneReadMapper phoneReadMapper;
     private final UserCreateEditMapper userCreateEditMapper;
     private final ImageService imageService;
+    private final EntityManager entityManager;
 
     public Page<UserReadDto> findAll(UserFilter filter, Pageable pageable) {
         Predicate predicate = QPredicates.builder()
@@ -62,7 +70,9 @@ public class UserService implements UserDetailsService {
                 .collect(Collectors.toList());
     }
 
+    //    @Cacheable(value = "user", key = "#id")
     public Optional<UserReadDto> findById(Long id) {
+//        entityManager.clear();
         return userRepository.findById(id)
                 .map(user -> userReadMapper.map(user));
     }
@@ -74,6 +84,7 @@ public class UserService implements UserDetailsService {
                 .flatMap(s -> imageService.get(s));
     }
 
+    //    @Cacheable("user")
     @Transactional
     public UserReadDto create(UserCreateEditDto userCreateEditDto) {
         return Optional.of(userCreateEditDto)
@@ -83,11 +94,6 @@ public class UserService implements UserDetailsService {
                 })
                 .map(user -> {
                     User savedUser = userRepository.saveAndFlush(user);
-//                    List<Phone> phones = Optional.ofNullable(savedUser.getPhones()).orElse(new ArrayList<>());
-//                    phones.stream().forEach(phone -> {
-//                        phone.setOwner(savedUser);
-//                        phoneRepository.saveAndFlush(phone);
-//                    });
                     savedUser.getPhones().stream().forEach(phone -> {
                         phone.setOwner(savedUser);
                         phoneRepository.saveAndFlush(phone);
@@ -110,25 +116,39 @@ public class UserService implements UserDetailsService {
     }
 
     @SneakyThrows
-    private void uploadImage(MultipartFile image){
-        if(!image.isEmpty()){
+    private void uploadImage(MultipartFile image) {
+        if (image != null && !image.isEmpty()) {
             imageService.upload(image.getOriginalFilename(), image.getInputStream());
         }
     }
 
-    @CacheEvict(allEntries = true)
     @Transactional
+//    @CacheEvict(value = "user", allEntries = true)
+    @Modifying(clearAutomatically = true)
     public boolean deletePhoneById(Long id) {
         return phoneRepository.findById(id)
                 .map(phone -> {
                     phoneRepository.deleteById(phone.getId());
                     phoneRepository.flush();
+                    entityManager.clear();
                     return true;
                 }).orElse(false);
 
     }
 
-    public Optional<PhoneReadDto> findPhoneById(Long id){
+    @Transactional
+    public boolean deleteAllPhonesByUser(Long id) {
+        return userRepository.findById(id)
+                .map(user -> {
+                    phoneRepository.deleteAllByOwner(user);
+                    phoneRepository.flush();
+                    entityManager.clear();
+                    return true;
+                })
+                .orElse(false);
+    }
+
+    public Optional<PhoneReadDto> findPhoneById(Long id) {
         return phoneRepository.findById(id)
                 .map(phone -> phoneReadMapper.map(phone));
     }

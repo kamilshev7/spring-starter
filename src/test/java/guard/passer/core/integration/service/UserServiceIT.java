@@ -1,26 +1,26 @@
 package guard.passer.core.integration.service;
 
+import guard.passer.core.config.CachingConfig;
 import guard.passer.core.database.entity.UserRole;
-import guard.passer.core.database.reporitory.PhoneRepository;
 import guard.passer.core.dto.PhoneReadDto;
 import guard.passer.core.dto.UserCreateEditDto;
 import guard.passer.core.dto.UserReadDto;
 import guard.passer.core.integration.IntegrationTestBase;
 import guard.passer.core.service.UserService;
-import liquibase.pro.packaged.I;
 import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.springframework.cache.CacheManager;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.test.annotation.Commit;
 
+import javax.persistence.EntityManager;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @RequiredArgsConstructor
 public class UserServiceIT extends IntegrationTestBase {
@@ -38,7 +38,53 @@ public class UserServiceIT extends IntegrationTestBase {
     }
 
     @Test
-    void deleteById() {
+    void updatePhones() {
+        Optional<UserReadDto> user1 = userService.findById(2L);
+        Optional<PhoneReadDto> phoneById1 = userService.findPhoneById(3L);
+        UserCreateEditDto userCreateEditDto = new UserCreateEditDto(
+                "petr@gmail.com",
+                null,
+                LocalDate.now(),
+                "Petr",
+                "Petrov",
+                UserRole.USER,
+                COMPANY_1,
+                List.of("+7 777 777 77 74", "+7 777 777 77 75"),
+                new MockMultipartFile("test", new byte[0])
+        );
+        Optional<PhoneReadDto> phoneById2 = userService.findPhoneById(3L);
+        Optional<UserReadDto> user2 = userService.update(2L, userCreateEditDto);
+        System.out.println();
+//        assertEquals(3, userService.findById(2L).get().getPhones().size());
+//        assertEquals(3L, userService.findPhoneById(3L).get().getId());
+//        assertTrue(userService.deleteAllPhonesByUser(2L));
+//        assertTrue(userService.findPhoneById(3L).isEmpty());
+//        assertEquals(0, userService.findById(2L).get().getPhones().size());
+    }
+
+    @Test
+    void deleteAllPhonesByUserId() {
+        assertEquals(3, userService.findById(2L).get().getPhones().size());
+        assertEquals(3L, userService.findPhoneById(3L).get().getId());
+        assertTrue(userService.deleteAllPhonesByUser(2L));
+        assertTrue(userService.findPhoneById(3L).isEmpty());
+        assertEquals(0, userService.findById(2L).get().getPhones().size());
+    }
+
+    @Test
+    void deletePhoneById() {
+        Optional<UserReadDto> user1 = userService.findById(2L);
+        assertEquals(3, user1.get().getPhones().size());
+        assertEquals(3L, userService.findPhoneById(3L).get().getId());
+        assertTrue(userService.deletePhoneById(3L));
+        assertTrue(userService.findPhoneById(3L).isEmpty());
+        Optional<UserReadDto> user2 = userService.findById(2L);
+        assertEquals(2, user2.get().getPhones().size());
+        System.out.println();
+    }
+
+    @Test
+    void createAndDeleteUserById() {
         UserCreateEditDto userCreateEditDto = new UserCreateEditDto(
                 "test1@",
                 null,
@@ -51,11 +97,10 @@ public class UserServiceIT extends IntegrationTestBase {
                 new MockMultipartFile("test", new byte[0])
         );
         UserReadDto actualResult = userService.create(userCreateEditDto);
-        Optional<PhoneReadDto> phoneById1 = userService.findPhoneById(7L);
-        boolean b = userService.delete(actualResult.getId());
-        Optional<PhoneReadDto> phoneById2 = userService.findPhoneById(7L);
-        Optional<UserReadDto> user = userService.findById(actualResult.getId());
-        System.out.println();
+        assertEquals(7L, userService.findPhoneById(7L).get().getId());
+        assertTrue(userService.delete(actualResult.getId()));
+        assertTrue(userService.findPhoneById(7L).isEmpty());
+        assertTrue(userService.findById(actualResult.getId()).isEmpty());
     }
 
     @Test
@@ -72,10 +117,12 @@ public class UserServiceIT extends IntegrationTestBase {
                 new MockMultipartFile("test", new byte[0])
         );
         UserReadDto actualResult = userService.create(userCreateEditDto);
+        Optional<UserReadDto> user1 = userService.findById(actualResult.getId());
+        Optional<UserReadDto> user2 = userService.findById(actualResult.getId());
         Optional<PhoneReadDto> phoneById1 = userService.findPhoneById(7L);
         boolean b = userService.deletePhoneById(7L);
         Optional<PhoneReadDto> phoneById2 = userService.findPhoneById(7L);
-        Optional<UserReadDto> user = userService.findById(actualResult.getId());
+        Optional<UserReadDto> user3 = userService.findById(actualResult.getId());
         System.out.println();
     }
 

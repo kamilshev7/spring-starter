@@ -3,8 +3,10 @@ package guard.passer.core.config;
 import guard.passer.core.database.pool.ConnectionPool;
 import guard.passer.core.database.reporitory.UserRepository;
 import guard.passer.web.config.WebConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.*;
 
 @Import(WebConfiguration.class)

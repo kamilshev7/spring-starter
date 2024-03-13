@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-@ToString(exclude = "userChats")
+@ToString(exclude = {"userChats"})
 @EqualsAndHashCode(of = "username")
 @NoArgsConstructor
 @AllArgsConstructor
@@ -53,6 +53,6 @@ public class User extends AuditingEntity<Long>{
 
     @NotAudited
     @Builder.Default
-    @OneToMany(mappedBy = "owner", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Phone> phones = new ArrayList<>();
 }

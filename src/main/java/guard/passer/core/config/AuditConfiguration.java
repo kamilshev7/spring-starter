@@ -20,7 +20,7 @@ public class AuditConfiguration {
     public AuditorAware<String> auditorAware(){
         return () -> Optional.ofNullable(
                 SecurityContextHolder.getContext().getAuthentication())
-                .map(authentication -> (UserDetails) authentication.getDetails())
+                .map(authentication -> (UserDetails) authentication.getPrincipal())
                 .map(userDetails -> userDetails.getUsername());
     }
 }

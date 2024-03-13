@@ -67,4 +67,20 @@ public class UserRestController {
         return userService.findPhoneById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
+
+    @DeleteMapping("/phone/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deletePhoneById(@PathVariable Long id) {
+        if (!userService.deletePhoneById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @DeleteMapping("/{id}/phone")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteAllPhonesByUserId(@PathVariable Long id) {
+        if (!userService.deleteAllPhonesByUser(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+    }
 }
